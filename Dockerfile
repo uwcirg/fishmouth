@@ -13,7 +13,7 @@ COPY . .
 
 EXPOSE 5000
 
-ENV FLASK_APP=fishmouth.wsgi:app
+ENV FLASK_APP=app.wsgi:app
 
 CMD \
     gunicorn --bind "0.0.0.0:${P_PORT:-5000}" ${FLASK_APP}
