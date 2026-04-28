@@ -1,5 +1,8 @@
 import os
 
 class Config:
-    HAPI_BASE_URL = os.getenv("HAPI_BASE_URL", "http://localhost:8080/fhir")
-    HAPI_TIMEOUT = int(os.getenv("HAPI_TIMEOUT", "10"))
+    APP_FHIR_URL = os.getenv("APP_FHIR_URL", "http://localhost:8080/fhir")
+    APP_FHIR_TIMEOUT = int(os.getenv("APP_FHIR_TIMEOUT", "10"))
+
+    UPSTREAM_FHIR_URL = os.getenv("UPSTREAM_FHIR_URL", "http://localhost:8080/fhir")
+    UPSTREAM_FHIR_TIMEOUT = int(os.getenv("UPSTREAM_FHIR_TIMEOUT", "10"))

@@ -25,6 +25,19 @@ MOCK_EXTRACT_RESPONSE = {
     ]
 }
 
+MOCK_POST_RESPONSE ={
+  "resourceType": "Bundle",
+  "type": "transaction-response",
+  "entry": [
+    {
+      "response": {
+        "status": "201 Created",
+        "location": "Observation/123/_history/1",
+        "lastModified": "2026-04-28T12:00:00Z"
+      }
+    }
+  ]
+}
 
 def test_event_success(client, mocker):
     """
@@ -37,14 +50,17 @@ def test_event_success(client, mocker):
         "app.routes.extract_resource",
         return_value=MOCK_EXTRACT_RESPONSE
     )
+    mock_upstream_post = mocker.patch(
+        "app.routes.post_resource_upstream",
+        return_value=MOCK_POST_RESPONSE
+    )
 
     resp = client.post("/event", json=VALID_QR)
 
     assert resp.status_code == 200
 
     data = resp.get_json()
-    assert data["status"] == "ok"
-    assert data["extracted"] == MOCK_EXTRACT_RESPONSE
+    assert data == MOCK_POST_RESPONSE
 
     # Ensure extract was called with payload
     mock_extract.assert_called_once_with(VALID_QR)
@@ -105,4 +121,4 @@ def test_extract_http_layer(client, mocker):
     resp = client.post("/event", json=VALID_QR)
 
     assert resp.status_code == 200
-    mock_post.assert_called_once()
+    assert mock_post.call_count == 2
