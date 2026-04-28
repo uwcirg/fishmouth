@@ -1,5 +1,7 @@
 import requests
+from requests.auth import HTTPBasicAuth
 from flask import current_app
+
 
 def extract_resource(resource: dict) -> dict:
     """ POST resource to APP FHIR $extract operation.
@@ -37,6 +39,8 @@ def post_resource_upstream(resource: dict) -> dict:
     """
     base_url = current_app.config["UPSTREAM_FHIR_URL"]
     timeout = current_app.config["UPSTREAM_FHIR_TIMEOUT"]
+    user = current_app.config["UPSTREAM_FHIR_USER"]
+    password = current_app.config["UPSTREAM_FHIR_PASSWORD"]
     resource_type = resource["resourceType"]
     url = f"{base_url}"
     if resource_type != "Bundle":
@@ -45,8 +49,10 @@ def post_resource_upstream(resource: dict) -> dict:
         "Content-Type": "application/fhir+json",
         "Accept": "application/fhir+json",
     }
+    basic_auth = HTTPBasicAuth(user, password)
     resp = requests.post(
         url,
+        auth=basic_auth,
         json=resource,
         headers=headers,
         timeout=timeout,
