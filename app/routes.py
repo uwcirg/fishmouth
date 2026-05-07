@@ -1,46 +1,48 @@
 from flask import Blueprint, request, jsonify, current_app
-from .services.fhir_client import extract_resource, post_resource_upstream
+from .services.process_resource import process_questionnaire_response
 
 bp = Blueprint("api", __name__)
 
-@bp.route("/event", methods=["POST"])
-def handle_event():
+@bp.route("/extract-n-post", methods=["POST"])
+def extract_n_post():
     """
-    Receives a FHIR resource (typically QuestionnaireResponse)
-    and triggers $extract on remote HAPI server.
-    """
+    Given a FHIR resource bundle of type `subscription-notification`,
+    triggers $extract on APP_FHIR server, and subsequently posts the
+    results to the UPSTREAM_FHIR_URL endpoint.
 
+    :return: transaction-response bundle, with ordered entries with the
+      status of each respective entry or exception details.
+    """
     if not request.is_json:
         return jsonify({"error": "Expected JSON"}), 400
-
     resource = request.get_json()
-
     resource_type = resource.get("resourceType")
-    if not resource_type:
-        return jsonify({"error": "Missing resourceType"}), 400
+    bundle_type = resource.get("type")
+    entries = resource.get("entry", [])
+    if not resource_type or resource_type != "Bundle" or bundle_type != "subscription-notification":
+        return jsonify({"error": "Invalid; expecting Bundle of type `subscription-notification`"}), 400
 
-    current_app.logger.info("Received event for resourceType=%s", resource_type)
+    current_app.logger.info(f"Received event containing {len(entries)} entries")
 
-    # Only allow QuestionnaireResponse for now
-    if resource_type != "QuestionnaireResponse":
-        return jsonify({"error": "Unsupported resourceType"}), 400
+    results_bundle = {
+        "resourceType": "Bundle",
+        "type": "transaction-response",
+    }
+    entry_results = []
+    for entry in entries:
+        entry_type = entry["resource"].get("resourceType")
+        # skip over SubscriptionStatus
+        if entry_type == "SubscriptionStatus":
+            entry_results.append({"response": {"status": "200 OK"}})
+            continue
 
-    try:
-        extracted = extract_resource(resource)
-    except Exception as e:
-        current_app.logger.exception("FHIR $extract failed {e}")
-        return jsonify({
-            "error": "FHIR extract failed",
-            "details": str(e)
-        }), 502
+        # Only know how to process QuestionnaireResponse, for now
+        if entry_type != "QuestionnaireResponse":
+            entry_results.append({"response": {"status": "501 Not Implemented"}})
+            continue
 
-    try:
-        results = post_resource_upstream(extracted)
-    except Exception as e:
-        current_app.logger.exception("FHIR UPSTREAM POST failed {e}")
-        return jsonify({
-            "error": "FHIR UPSTREAM POST failed",
-            "details": str(e)
-        }), 502
+        result = process_questionnaire_response(entry["resource"])
+        entry_results.append(result)
 
-    return jsonify(results)
+    results_bundle.update(entry=entry_results)
+    return jsonify(results_bundle)
