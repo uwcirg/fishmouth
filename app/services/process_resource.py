@@ -1,28 +1,11 @@
 from flask import current_app
 from .fhir_client import extract_resource, post_resource_upstream
+from .map_resource import map_patient_references
 
 def unprocessable_entity(message):
     """Wrapper to generate response dict for unprocessable entity"""
     return dict(response={
         "status": "422 Unprocessable Entity",
-        "outcome": {
-            "resourceType": "OperationalOutcome",
-            "issue": [
-                {
-                    "severity": "error",
-                    "details": {
-                        "text": message
-                    }
-                }
-            ]
-        }
-    })
-
-
-def successful_entity(message):
-    """Wrapper to generate response dict for successful entity"""
-    return dict(response={
-        "status": "200 OK",
         "outcome": {
             "resourceType": "OperationalOutcome",
             "issue": [
@@ -45,6 +28,7 @@ def entry_from_bundle(bundle):
         return unprocessable_entity(f"response lookup failed in {bundle}")
     return bundle["entry"][0]
 
+
 def process_questionnaire_response(resource):
     """Given a QuestionnaireResponse, react as requested
 
@@ -66,8 +50,11 @@ def process_questionnaire_response(resource):
             # TODO write resource resource to APP_FHIR
             raise NotImplementedError("Writing extracted resources incomplete")
 
+        # Map any contained Patient references to UPSTREAM ids.
+        mapped_resource = map_patient_references(resource)
+
         try:
-            results = post_resource_upstream(resource)
+            results = post_resource_upstream(mapped_resource)
         except Exception as e:
             msg = f"FHIR UPSTREAM POST failed {e}"
             current_app.logger.exception(msg)
@@ -76,4 +63,3 @@ def process_questionnaire_response(resource):
     # potentially many Observations, return the success/failure of
     # the extraction process alone.
     return dict(response={"status": "200 OK"})
-
