@@ -2,6 +2,7 @@ import copy
 
 VALID_QR = {
     "resourceType": "QuestionnaireResponse",
+    "id": "example-1",
     "status": "completed",
     "questionnaire": "Questionnaire/example",
     "item": [
@@ -13,6 +14,10 @@ VALID_QR = {
         }
     ]
 }
+
+VALID_QR_ONLY_ID = VALID_QR.copy()
+for unwanted in ("status", "questionnaire", "item"):
+    VALID_QR_ONLY_ID.pop(unwanted)
 
 SUBSCRIPTION_NOTIFICATION = {
     "resourceType": "Bundle",
@@ -30,7 +35,10 @@ SUBSCRIPTION_NOTIFICATION = {
             }
         },
         {
-            "resource": VALID_QR
+            "resource": {
+                "resourceType": "QuestionnaireResponse",
+                "id": VALID_QR["id"],
+            }
         }
     ]
 }
@@ -84,7 +92,7 @@ def test_event_success(client, mocker):
     assert data == MOCK_POST_RESPONSE
 
     # Ensure extract was called with payload
-    mock_extract.assert_called_once_with(VALID_QR)
+    mock_extract.assert_called_once_with(VALID_QR_ONLY_ID)
 
 
 def test_event_invalid_content_type(client):

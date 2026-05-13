@@ -3,8 +3,9 @@
 Lightweight service with single intent: to receive restful API calls
 from FHIR subscriptions or external applications.
 
-POSTs to `/extract-n-post` shall include a FHIR resource as content-type `application+fhir`
-The contained resource will be passed to the configured "APP_FHIR_URL" `$extract` process,
+POSTs to `/extract-n-post` shall include a FHIR resource Bundle of type
+`subscription-notification` as content-type `application+fhir`.
+The contained resource identifiers will be passed to the configured "APP_FHIR_URL" `$extract` process,
 and the resulting bundle will inturn get be sent via `POST` to the "UPSTREAM_FHIR_URL"
 
 ## Subscription Notifications
@@ -32,22 +33,6 @@ subscription event trigger), a FHIR `Bundle` resource of type
             "resource": {
               "resourceType": "QuestionnaireResponse",
               "id": "qr-example-1",
-              "status": "completed",
-              "subject": {
-                "reference": "Patient/example"
-              },
-              "questionnaire": "Questionnaire/example",
-              "authored": "2026-05-05T12:00:00Z",
-              "item": [
-                {
-                  "linkId": "q1",
-                  "answer": [
-                    {
-                      "valueString": "blue"
-                    }
-                  ]
-                }
-              ]
             }
           }
         ]
