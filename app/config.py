@@ -4,6 +4,9 @@ import json
 class Config:
     APP_FHIR_URL = os.getenv("APP_FHIR_URL", "http://localhost:8080/fhir")
     APP_FHIR_TIMEOUT = int(os.getenv("APP_FHIR_TIMEOUT", "10"))
+    APP_FHIR_USER = os.getenv("APP_FHIR_USER")
+    APP_FHIR_PASSWORD = os.getenv("APP_FHIR_PASSWORD")
+
     EXTRACTED_RESOURCES_PERSISTED_IN_APP_FHIR = json.loads(
         os.getenv("EXTRACTED_RESOURCES_PERSISTED_IN_APP_FHIR", "[]"))
 
