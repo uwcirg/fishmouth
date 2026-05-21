@@ -11,14 +11,15 @@ def extract_resource(resource: dict) -> dict:
     base_url = current_app.config["APP_FHIR_URL"]
     timeout = current_app.config["APP_FHIR_TIMEOUT"]
     resource_type = resource["resourceType"]
-    url = f"{base_url}/{resource_type}/$extract"
+    id = resource.get("id", "")
+    url = f"{base_url}/{resource_type}/{id}/$extract"
     headers = {
         "Content-Type": "application/fhir+json",
         "Accept": "application/fhir+json",
     }
     resp = requests.post(
         url,
-        json=resource,
+        json={"resourceType", "Parameters"},
         headers=headers,
         timeout=timeout,
     )
