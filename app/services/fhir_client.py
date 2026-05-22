@@ -50,10 +50,10 @@ def post_resource_app_fhir(resource: dict) -> dict:
 
     :return: server response.json
     """
-    base_url = current_app.config["UPSTREAM_FHIR_URL"]
-    timeout = current_app.config["UPSTREAM_FHIR_TIMEOUT"]
-    user = current_app.config["UPSTREAM_FHIR_USER"]
-    password = current_app.config["UPSTREAM_FHIR_PASSWORD"]
+    base_url = current_app.config["APP_FHIR_URL"]
+    timeout = current_app.config["APP_FHIR_TIMEOUT"]
+    user = current_app.config["APP_FHIR_USER"]
+    password = current_app.config["APP_FHIR_PASSWORD"]
     return post_resource(resource, base_url, timeout, user, password)
 
 
