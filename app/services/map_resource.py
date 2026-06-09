@@ -78,5 +78,6 @@ def map_patient_references(resource):
         return resource
 
     mapped_id = lookup_identified_patient(patient_id=subject_id)
-    resource.update({"subject": f"Patient/{mapped_id}"})
-    return resource
+    mapped_resource = resource.copy()
+    mapped_resource.update({"subject": f"Patient/{mapped_id}"})
+    return mapped_resource

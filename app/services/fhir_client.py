@@ -42,6 +42,27 @@ def post_resource_upstream(resource: dict) -> dict:
     timeout = current_app.config["UPSTREAM_FHIR_TIMEOUT"]
     user = current_app.config["UPSTREAM_FHIR_USER"]
     password = current_app.config["UPSTREAM_FHIR_PASSWORD"]
+    return post_resource(resource, base_url, timeout, user, password)
+
+
+def post_resource_app_fhir(resource: dict) -> dict:
+    """POST resource(s) to APP FHIR server
+
+    :return: server response.json
+    """
+    base_url = current_app.config["APP_FHIR_URL"]
+    timeout = current_app.config["APP_FHIR_TIMEOUT"]
+    user = current_app.config["APP_FHIR_USER"]
+    password = current_app.config["APP_FHIR_PASSWORD"]
+    return post_resource(resource, base_url, timeout, user, password)
+
+
+def post_resource(
+        resource: dict,
+        base_url: str,
+        timeout: int,
+        user: str | None,
+        password: str | None) -> dict:
     resource_type = resource["resourceType"]
     url = f"{base_url}"
     if resource_type != "Bundle":
@@ -62,9 +83,10 @@ def post_resource_upstream(resource: dict) -> dict:
     try:
         resp.raise_for_status()
     except requests.HTTPError as e:
-        current_app.logger.error("FHIR UPSTREAM POST failed: %s", resp.text)
+        current_app.logger.error(f"FHIR POST to {url} failed: {resp.text}")
         raise
 
+    current_app.logger.info(f"FHIR POST to {url} succeeded: {resp.json()}")
     return resp.json()
 
 
