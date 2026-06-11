@@ -52,9 +52,12 @@ def post_resource_app_fhir(resource: dict) -> dict:
     """
     base_url = current_app.config["APP_FHIR_URL"]
     timeout = current_app.config["APP_FHIR_TIMEOUT"]
-    user = current_app.config["APP_FHIR_USER"]
-    password = current_app.config["APP_FHIR_PASSWORD"]
-    return post_resource(resource, base_url, timeout, user, password)
+    return post_resource(
+        resource=resource,
+        base_url=base_url,
+        timeout=timeout,
+        user=None,
+        password=None)
 
 
 def post_resource(
@@ -71,7 +74,9 @@ def post_resource(
         "Content-Type": "application/fhir+json",
         "Accept": "application/fhir+json",
     }
-    basic_auth = HTTPBasicAuth(user, password)
+    basic_auth = None
+    if user and password:
+        basic_auth = HTTPBasicAuth(user, password)
     resp = requests.post(
         url,
         auth=basic_auth,
