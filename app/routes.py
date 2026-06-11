@@ -49,6 +49,15 @@ def extract_n_post():
     results_bundle.update(entry=entry_results)
     return jsonify(results_bundle)
 
+@bp.route("/settings")
+def settings():
+    config_settings = {}
+    for key in current_app.config:
+        if "password" in key.lower():
+            continue
+        config_settings[key] = current_app.config[key]
+    return jsonify(config_settings)
+
 
 @bp.before_app_request
 def before_request():
