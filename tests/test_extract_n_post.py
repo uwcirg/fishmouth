@@ -106,7 +106,7 @@ def test_event_missing_resource_type(client):
     resp = client.post("/extract-n-post", json={})
 
     assert resp.status_code == 400
-    assert "Bundle" in resp.get_json()["error"]
+    assert "Invalid JSON" in resp.get_json()["error"]
 
 
 def test_event_unsupported_resource_type(client):
