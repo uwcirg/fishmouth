@@ -19,7 +19,7 @@ def extract_resource(resource: dict) -> dict:
     }
     resp = requests.post(
         url,
-        json={"resourceType", "Parameters"},
+        json={"resourceType": "Parameters"},
         headers=headers,
         timeout=timeout,
     )
