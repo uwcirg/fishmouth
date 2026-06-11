@@ -55,7 +55,7 @@ def settings():
     for key in current_app.config:
         if "password" in key.lower():
             continue
-        config_settings[key] = current_app.config[key]
+        config_settings[key] = str(current_app.config[key])
     return jsonify(config_settings)
 
 
