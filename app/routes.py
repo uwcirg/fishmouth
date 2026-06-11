@@ -15,6 +15,7 @@ def extract_n_post():
     :return: transaction-response bundle, with ordered entries with the
       status of each respective entry or exception details.
     """
+    return jsonify({"early exit": "ok"}), 200
     if not request.is_json:
         return jsonify({"error": "Expected JSON"}), 400
     resource = request.get_json()
