@@ -6,6 +6,9 @@ class Config:
     APP_FHIR_TIMEOUT = int(os.getenv("APP_FHIR_TIMEOUT", "10"))
     APP_MRN_SYSTEM = os.getenv("APP_MRN_SYSTEM")
 
+    DEBUG_DUMP_HEADERS = os.getenv("DEBUG_DUMP_HEADERS", "true")
+    DEBUG_DUMP_REQUEST = os.getenv("DEBUG_DUMP_REQUEST", "false")
+
     EXTRACTED_RESOURCES_PERSISTED_IN_APP_FHIR = json.loads(
         os.getenv("EXTRACTED_RESOURCES_PERSISTED_IN_APP_FHIR", "[]"))
 
