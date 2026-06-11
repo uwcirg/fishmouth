@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
+from werkzeug.exceptions import BadRequest
+
 from .services.process_resource import process_questionnaire_response
 
 bp = Blueprint("api", __name__)
@@ -46,3 +48,9 @@ def extract_n_post():
 
     results_bundle.update(entry=entry_results)
     return jsonify(results_bundle)
+
+
+@bp.errorhandler(BadRequest)
+def handle_bad_request(error):
+    current_app.logger.error(f"Bad Request; internal error: {error.description}")
+    return jsonify({"error": "Bad Request"}), 400
