@@ -8,9 +8,6 @@ def create_app():
     from .routes import bp
     app.register_blueprint(bp)
 
-    from .health import bp as health_bp
-    app.register_blueprint(health_bp)
-
     configure_proxy(app)
     return app
 
