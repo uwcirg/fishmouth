@@ -38,6 +38,11 @@ def configure_proxy(app):
         app.wsgi_app = ProxyFix(
             app=app.wsgi_app,
 
+            # trust X-Forwarded-Proto
+            x_proto=1,
+
+            # trust X-Forwarded-For
+            x_for=1,
             # trust X-Forwarded-Host
             x_host=1,
 
