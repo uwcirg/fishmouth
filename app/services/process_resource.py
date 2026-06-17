@@ -1,4 +1,6 @@
 from flask import current_app
+import json
+
 from .fhir_client import extract_resource, post_resource_upstream, post_resource_app_fhir
 from .map_resource import map_patient_references
 
@@ -62,7 +64,11 @@ def process_questionnaire_response(resource):
     try:
         extracted = extract_resource(resource)
     except Exception as e:
-        msg = f"FHIR extract failed {e}"
+        try:
+            error_data = json.loads(str(e))
+            msg = f'FHIR $extract failed {error_data["issue"][0]["diagnostics"]}'
+        except (json.JSONDecodeError, KeyError, IndexError) as x:
+            msg = f"FHIR $extract failed: {e} ; could not parse error: {x}"
         current_app.logger.exception(msg)
         return unprocessable_entity(msg)
 

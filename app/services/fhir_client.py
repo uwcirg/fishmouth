@@ -28,7 +28,7 @@ def extract_resource(resource: dict) -> dict:
         resp.raise_for_status()
     except requests.HTTPError as e:
         current_app.logger.error("FHIR extract failed: %s", resp.text)
-        raise
+        raise ValueError(resp.text)
 
     return resp.json()
 
