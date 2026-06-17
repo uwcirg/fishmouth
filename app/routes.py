@@ -33,7 +33,10 @@ def extract_n_post():
         "type": "transaction-response",
     }
     entry_results = []
+    status = 200
     for entry in entries:
+        if status != 200:
+            break
         entry_type = entry["resource"].get("resourceType")
         # skip over SubscriptionStatus
         if entry_type == "SubscriptionStatus":
@@ -46,10 +49,12 @@ def extract_n_post():
             continue
 
         result = process_questionnaire_response(entry["resource"])
+        status = int(result["response"]["status"].split()[0])
         entry_results.append(result)
 
     results_bundle.update(entry=entry_results)
-    return jsonify(results_bundle)
+    return jsonify(results_bundle), status
+
 
 @bp.route("/settings")
 def settings():
