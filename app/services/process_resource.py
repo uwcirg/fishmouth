@@ -73,29 +73,32 @@ def process_questionnaire_response(resource):
         return unprocessable_entity(msg)
 
     # single QuestionnaireResponse will likely generate many Observations
-    for resource in extracted.get("entry", []):
-        resource = resource.get("resource")  # remove nested bundle format
+    try:
+        for resource in extracted.get("entry", []):
+            resource = resource.get("resource")  # remove nested bundle format
 
-        # Map any contained Patient references to UPSTREAM ids.
-        mapped_resource = map_patient_references(resource)
+            # Map any contained Patient references to UPSTREAM ids.
+            mapped_resource = map_patient_references(resource)
 
-        remote_id = None
-        try:
-            results = post_resource_upstream(mapped_resource)
-            remote_id = results["id"]
-        except Exception as e:
-            msg = f"FHIR UPSTREAM POST failed {e}"
-            current_app.logger.exception(msg)
+            remote_id = None
+            try:
+                results = post_resource_upstream(mapped_resource)
+                remote_id = results["id"]
+            except Exception as e:
+                msg = f"FHIR UPSTREAM POST failed {e}"
+                current_app.logger.exception(msg)
 
-        if resource.get("resourceType") and resource["resourceType"] in (
-                current_app.config["EXTRACTED_RESOURCES_PERSISTED_IN_APP_FHIR"]):
-            if remote_id:
-                resource = update_identifier(
-                    resource=resource,
-                    system=current_app.config["UPSTREAM_FHIR_URL"],
-                    value=remote_id)
+            if resource.get("resourceType") and resource["resourceType"] in (
+                    current_app.config["EXTRACTED_RESOURCES_PERSISTED_IN_APP_FHIR"]):
+                if remote_id:
+                    resource = update_identifier(
+                        resource=resource,
+                        system=current_app.config["UPSTREAM_FHIR_URL"],
+                        value=remote_id)
 
-            post_resource_app_fhir(resource)
+                post_resource_app_fhir(resource)
+    except Exception as e:
+        return unprocessable_entity(str(e))
 
     # given the mismatch between a single QuestionnaireResponse and
     # potentially many Observations, return the success/failure of
