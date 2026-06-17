@@ -131,8 +131,8 @@ def test_event_extract_failure(client, mocker):
 
     resp = client.post("/extract-n-post", json=SUBSCRIPTION_NOTIFICATION)
 
-    # The respose should be valid, but contain error details for the entry
-    assert resp.status_code == 200
+    # The response should reflect the error and contain error details for the entry
+    assert resp.status_code == 422
 
     data = resp.get_json()
     # should see two response entries.
@@ -141,8 +141,8 @@ def test_event_extract_failure(client, mocker):
     assert len(data['entry']) == 2
     assert data['entry'][0]['response']['status'] == '200 OK'
     assert data['entry'][1]['response']['status'] == '422 Unprocessable Entity'
-    assert data['entry'][1]['response']['outcome']['issue'][0]['details']['text'] == (
-        "FHIR extract failed boom")
+    assert data['entry'][1]['response']['outcome']['issue'][0]['details']['text'].startswith(
+        "FHIR $extract failed: boom")
 
 
 
