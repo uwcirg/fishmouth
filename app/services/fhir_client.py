@@ -19,7 +19,7 @@ def extract_resource(resource: dict) -> dict:
     }
     resp = requests.post(
         url,
-        json={"resourceType", "Parameters"},
+        json={"resourceType": "Parameters"},
         headers=headers,
         timeout=timeout,
     )
@@ -28,7 +28,7 @@ def extract_resource(resource: dict) -> dict:
         resp.raise_for_status()
     except requests.HTTPError as e:
         current_app.logger.error("FHIR extract failed: %s", resp.text)
-        raise
+        raise ValueError(resp.text)
 
     return resp.json()
 
@@ -52,9 +52,12 @@ def post_resource_app_fhir(resource: dict) -> dict:
     """
     base_url = current_app.config["APP_FHIR_URL"]
     timeout = current_app.config["APP_FHIR_TIMEOUT"]
-    user = current_app.config["APP_FHIR_USER"]
-    password = current_app.config["APP_FHIR_PASSWORD"]
-    return post_resource(resource, base_url, timeout, user, password)
+    return post_resource(
+        resource=resource,
+        base_url=base_url,
+        timeout=timeout,
+        user=None,
+        password=None)
 
 
 def post_resource(
@@ -71,7 +74,9 @@ def post_resource(
         "Content-Type": "application/fhir+json",
         "Accept": "application/fhir+json",
     }
-    basic_auth = HTTPBasicAuth(user, password)
+    basic_auth = None
+    if user and password:
+        basic_auth = HTTPBasicAuth(user, password)
     resp = requests.post(
         url,
         auth=basic_auth,

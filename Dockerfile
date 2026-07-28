@@ -16,4 +16,4 @@ EXPOSE 5000
 ENV FLASK_APP=app.wsgi:app
 
 CMD \
-    gunicorn --bind "0.0.0.0:${P_PORT:-5000}" ${FLASK_APP}
+    gunicorn --bind "0.0.0.0:${P_PORT:-5000}" --log-level ${LOG_LEVEL:-debug} --access-logfile - ${FLASK_APP}

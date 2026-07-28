@@ -38,9 +38,9 @@ def lookup_identified_patient(patient_id):
         current_app.logger.warning(msg)
         raise ValueError(msg)
 
-    request_url = f"{upstream_fhir_url()}/Patient"
+    request_url = f"{upstream_fhir_url()}Patient"
     params = {"identifier": f"{upstream_mrn_system()}|{app_mrn}"}
-    response = requests.get(request_url, params=params)
+    response = requests.get(request_url, params=params, headers={"Accept": "application/fhir+json"})
     response.raise_for_status()
     # search returns a bundle - contents of exactly 1 indicates a match
     bundle = response.json()
@@ -69,7 +69,7 @@ def map_patient_references(resource):
 
     """
     subject_id = None
-    subject_reference = resource.get("subject", "")
+    subject_reference = resource.get("subject", {}).get("reference", "")
     if subject_reference.startswith("Patient"):
         subject_id = subject_reference[len("Patient")+1:]
 
