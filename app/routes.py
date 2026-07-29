@@ -12,6 +12,13 @@ def extract_n_post():
     triggers $extract on APP_FHIR server, and subsequently posts the
     results to the UPSTREAM_FHIR_URL endpoint.
 
+    In the event of an error, the process short circuits and returns the
+    appropriate status code and message.
+
+    In the event of success, the return bundle will include ordered entries
+    matching the sequence of the given resource bundle, including extracted
+    resources.
+
     :return: transaction-response bundle, with ordered entries with the
       status of each respective entry or exception details.
     """
@@ -46,11 +53,15 @@ def extract_n_post():
         # Only know how to process QuestionnaireResponse, for now
         if entry_type != "QuestionnaireResponse":
             entry_results.append({"response": {"status": "501 Not Implemented"}})
-            continue
+            status = 501
+            break
 
         result = process_questionnaire_response(entry["resource"])
         status = int(result["response"]["status"].split()[0])
-        entry_results.append(result)
+        if "bundle" in result["response"]:
+            entry_results.append({"response": result["response"]["bundle"]})
+        else:
+            entry_results.append(result)
 
     results_bundle.update(entry=entry_results)
     return jsonify(results_bundle), status

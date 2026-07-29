@@ -100,7 +100,6 @@ def process_questionnaire_response(resource):
     except Exception as e:
         return unprocessable_entity(str(e))
 
-    # given the mismatch between a single QuestionnaireResponse and
-    # potentially many Observations, return the success/failure of
-    # the extraction process alone.
-    return dict(response={"status": "200 OK"})
+    # without hitting a short-circuit exit above, the extraction was
+    # a success.  return details from extraction to reflect upstream
+    return dict(response={"status": "200 OK", "bundle": extracted})

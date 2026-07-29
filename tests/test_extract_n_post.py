@@ -66,9 +66,7 @@ MOCK_POST_RESPONSE ={
         },
     },
     {
-      "response": {
-        "status": "200 OK",
-      }
+      "response": MOCK_EXTRACT_RESPONSE
     }
   ]
 }
@@ -114,7 +112,7 @@ def test_event_unsupported_resource_type(client):
     with_unsupported['entry'][1] = dict(resource={"resourceType": "Patient"})
     resp = client.post("/extract-n-post", json=with_unsupported)
 
-    assert resp.status_code == 200
+    assert resp.status_code == 501
     # expect 2nd entry to include error details (1st is SubscriptionStatus entry)
     assert resp.json["entry"][1]["response"]["status"] == "501 Not Implemented"
 
