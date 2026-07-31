@@ -1,6 +1,5 @@
 """Manage mapping of Patient identifiers between multiple FHIR servers"""
 from flask import current_app
-import requests
 
 from .fhir_client import request_resource_app_fhir, request_resource_upstream
 
