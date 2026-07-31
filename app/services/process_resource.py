@@ -1,7 +1,7 @@
 from flask import current_app
 import json
 
-from .fhir_client import extract_resource, post_resource_upstream, post_resource_app_fhir
+from .fhir_client import extract_resource, request_resource_upstream, request_resource_app_fhir
 from .map_resource import map_patient_references
 
 
@@ -83,7 +83,7 @@ def process_questionnaire_response(resource):
             remote_id = None
             app_post_success, upstream_post_success = False, False
             try:
-                results = post_resource_upstream(mapped_resource)
+                results = request_resource_upstream("post", mapped_resource)
                 remote_id = results["id"]
                 upstream_post_success = True
             except Exception as e:
@@ -98,7 +98,7 @@ def process_questionnaire_response(resource):
                         system=current_app.config["UPSTREAM_FHIR_URL"],
                         value=remote_id)
 
-                post_resource_app_fhir(resource)
+                request_resource_app_fhir("post", resource)
                 app_post_success = True
     except Exception as e:
         return unprocessable_entity(str(e))

@@ -14,6 +14,11 @@ class Config:
 
     PREFERRED_URL_SCHEME = os.getenv("PREFERRED_URL_SCHEME", 'http')
 
+    # EPIC_CLIENT_ID is part of UPSTREAM, but distinct as a switch for
+    # additional EPIC specific headers, when defined
+    EPIC_CLIENT_ID = os.getenv("EPIC_CLIENT_ID")
+    EPIC_WPR_SYSTEM = os.getenv("EPIC_WPR_SYSTEM", "urn:oid:1.2.840.114350.1.13.136.3.7.2.878082")
+
     UPSTREAM_FHIR_URL = os.getenv("UPSTREAM_FHIR_URL", "http://localhost:8080/fhir")
     UPSTREAM_FHIR_TIMEOUT = int(os.getenv("UPSTREAM_FHIR_TIMEOUT", "10"))
     UPSTREAM_FHIR_USER = os.getenv("UPSTREAM_FHIR_USER")

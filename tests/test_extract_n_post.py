@@ -79,7 +79,7 @@ def test_event_success(client, mocker):
         return_value=MOCK_EXTRACT_RESPONSE
     )
     mock_upstream_post = mocker.patch(
-        "app.services.process_resource.post_resource_upstream",
+        "app.services.process_resource.request_resource_upstream",
         return_value=MOCK_POST_RESPONSE
     )
 

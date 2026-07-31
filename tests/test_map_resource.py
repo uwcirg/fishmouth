@@ -54,16 +54,16 @@ def test_lookup_patient(mocker):
     mocker.patch("app.services.map_resource.app_mrn_system", return_value="http://hospital.org/mrn")
     mocker.patch("app.services.map_resource.upstream_fhir_url", return_value="http://other.example.org")
     mocker.patch("app.services.map_resource.upstream_mrn_system", return_value="http://other.hospital.org/mrn")
+    mocker.patch("app.services.map_resource.epic_wpr_system", return_value="0.1.1.0")
 
-    app_call_response = mocker.Mock()
-    app_call_response.json.return_value = APP_PATIENT
-    launch_call_response = mocker.Mock()
-    launch_call_response.json.return_value = {
+    # return APP_PATIENT from app_fhir resource lookup
+    mocker.patch("app.services.map_resource.request_resource_app_fhir", return_value=APP_PATIENT)
+
+    # return bundle containing UPSTREAM_PATIENT from upstream resource lookup
+    launch_call_response  = {
         "resourceType": "Bundle",
-        "total": 1,
         "entry": [ dict(resource=UPSTREAM_PATIENT) ]
     }
-    requests_mock = mocker.patch("app.services.map_resource.requests.get")
-    requests_mock.side_effect = [app_call_response, launch_call_response]
-    mapped_id = lookup_identified_patient(APP_PATIENT["id"])
+    mocker.patch("app.services.map_resource.request_resource_upstream", return_value=launch_call_response)
+    mapped_id, _ = lookup_identified_patient(APP_PATIENT["id"])
     assert mapped_id == UPSTREAM_PATIENT["id"]
