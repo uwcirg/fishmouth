@@ -98,9 +98,10 @@ def request_resource(
             url += f"/{resource['id']}"
         if resource.get("identifier"):
             params = {
-                "identifier": '|'.join(
-                    {resource['identifier'][0]["system"]},
-                    {resource['identifier'][0]["value"]})
+                "identifier": '|'.join((
+                    resource['identifier'][0]["system"],
+                    resource['identifier'][0]["value"]
+                ))
             }
     if "Content-Type" not in headers:
         headers["Content-Type"] = "application/fhir+json"
