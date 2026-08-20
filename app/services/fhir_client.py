@@ -1,9 +1,8 @@
 import os
 
 import requests
-from requests import session
 from requests.auth import HTTPBasicAuth
-from flask import current_app
+from flask import current_app, g
 
 
 def extract_resource(resource: dict) -> dict:
@@ -39,20 +38,30 @@ def extract_resource(resource: dict) -> dict:
 def request_resource_upstream(http_verb: str, resource: dict) -> dict:
     """request resource(s) to/from UPSTREAM FHIR server
 
+    Possible configuration requires secondary service call to app with search authorization.
+    Depending on configuration, the endpoint may depend on `http_verb`.
+
     :return: server response.json
     """
-    base_url = current_app.config["UPSTREAM_FHIR_URL"]
+    if http_verb.lower() == "get" or current_app.config["UPSTREAM_SEARCH_URL"] is None:
+        base_url = current_app.config["UPSTREAM_FHIR_URL"]
+        user = current_app.config["UPSTREAM_FHIR_USER"]
+        password = current_app.config["UPSTREAM_FHIR_PASSWORD"]
+    else:
+        base_url = current_app.config["UPSTREAM_SEARCH_URL"]
+        user, password = None, None
     timeout = current_app.config["UPSTREAM_FHIR_TIMEOUT"]
-    user = current_app.config["UPSTREAM_FHIR_USER"]
-    password = current_app.config["UPSTREAM_FHIR_PASSWORD"]
     headers = {}
     # Use definition of EPIC_CLIENT_ID as switch for adding additional
     # Epic specific headers
     epic_client_id = os.getenv("EPIC_CLIENT_ID")
     if epic_client_id:
         headers["Epic-Client-ID"] = epic_client_id
-        headers["Epic-MyChartUser-ID"] = session.get("PatientWPR")
         headers["Epic-MyChartUser-IDType"] = "External"
+        # The single request global `g` will contain the patient_wpr only after successful
+        # APP:UPSTREAM patient linkage.  See map_resource.lookup_identified_patient()
+        if g.get("patient_wpr"):
+            headers["Epic-MyChartUser-ID"] = g.get("patient_wpr")
 
     return request_resource(
         http_verb=http_verb,
@@ -110,7 +119,7 @@ def request_resource(
     basic_auth = None
     if user and password:
         basic_auth = HTTPBasicAuth(user, password)
-    request_func = getattr(requests, http_verb)
+    request_func = getattr(requests, http_verb.lower())
     resp = request_func(
         url,
         auth=basic_auth,

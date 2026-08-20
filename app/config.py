@@ -24,3 +24,6 @@ class Config:
     UPSTREAM_FHIR_USER = os.getenv("UPSTREAM_FHIR_USER")
     UPSTREAM_FHIR_PASSWORD = os.getenv("UPSTREAM_FHIR_PASSWORD")
     UPSTREAM_MRN_SYSTEM = os.getenv("UPSTREAM_MRN_SYSTEM")
+
+    # Install may use separate service for search vs write.
+    UPSTREAM_SEARCH_URL = os.getenv("UPSTREAM_SEARCH_URL")
