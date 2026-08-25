@@ -80,7 +80,6 @@ def process_questionnaire_response(resource):
             # Map any contained Patient references to UPSTREAM ids.
             mapped_resource = map_patient_references(resource)
 
-            remote_id = None
             app_post_success, upstream_post_success = False, False
             try:
                 results = request_resource_upstream("post", mapped_resource)
@@ -89,14 +88,15 @@ def process_questionnaire_response(resource):
             except Exception as e:
                 msg = f"FHIR UPSTREAM POST failed {e}"
                 current_app.logger.exception(msg)
+                # if upstream post fails, no value in persisting local
+                raise e
 
             if resource.get("resourceType") and resource["resourceType"] in (
                     current_app.config["EXTRACTED_RESOURCES_PERSISTED_IN_APP_FHIR"]):
-                if remote_id:
-                    resource = update_identifier(
-                        resource=resource,
-                        system=current_app.config["UPSTREAM_FHIR_URL"],
-                        value=remote_id)
+                resource = update_identifier(
+                    resource=resource,
+                    system=current_app.config["UPSTREAM_FHIR_URL"],
+                    value=remote_id)
 
                 request_resource_app_fhir("post", resource)
                 app_post_success = True
