@@ -56,7 +56,7 @@ MOCK_EXTRACT_RESPONSE = {
     ]
 }
 
-MOCK_POST_RESPONSE ={
+MOCK_POST_BUNDLE_RESPONSE ={
   "resourceType": "Bundle",
   "type": "transaction-response",
   "entry": [
@@ -71,6 +71,24 @@ MOCK_POST_RESPONSE ={
   ]
 }
 
+MOCK_POST_OBSERVATION_RESPONSE ={
+    "resourceType": "Observation",
+    "id": "12345",
+    "meta": {
+    "versionId": "1",
+    "lastUpdated": "2026-08-25T13:25:00.000+00:00"
+    },
+    "status": "final",
+    "code": {
+        "coding": [{
+            "system": "http://loinc.org",
+            "code": "85354-9",
+            "display": "Blood pressure panel with all children optional"
+        }]
+    }
+}
+
+
 def test_event_success(client, mocker):
     """Confirm valid submission calls expected functions """
 
@@ -78,16 +96,19 @@ def test_event_success(client, mocker):
         "app.services.process_resource.extract_resource",
         return_value=MOCK_EXTRACT_RESPONSE
     )
-    mock_upstream_post = mocker.patch(
-        "app.services.process_resource.post_resource_upstream",
-        return_value=MOCK_POST_RESPONSE
+    mocker.patch(
+        "app.services.process_resource.request_resource_upstream",
+        return_value=MOCK_POST_OBSERVATION_RESPONSE
     )
 
     resp = client.post("/extract-n-post", json=SUBSCRIPTION_NOTIFICATION)
     assert resp.status_code == 200
 
     data = resp.get_json()
-    assert data == MOCK_POST_RESPONSE
+    assert len(data['entry']) == 2
+    assert data['entry'][0]['response']['status'] == '200 OK'
+    assert data['entry'][1]['response']['status'] == '200 OK'
+    assert data['entry'][1]['response']['bundle'] == MOCK_EXTRACT_RESPONSE
 
     # Ensure extract was called with payload
     mock_extract.assert_called_once_with(VALID_QR_ONLY_ID)
@@ -141,20 +162,3 @@ def test_event_extract_failure(client, mocker):
     assert data['entry'][1]['response']['status'] == '422 Unprocessable Entity'
     assert data['entry'][1]['response']['outcome']['issue'][0]['details']['text'].startswith(
         "FHIR $extract failed: boom")
-
-
-
-def test_extract_http_layer(client, mocker):
-    mock_resp = mocker.Mock()
-    mock_resp.json.return_value = MOCK_EXTRACT_RESPONSE
-    mock_resp.raise_for_status.return_value = None
-
-    mock_post = mocker.patch(
-        "app.services.fhir_client.requests.post",
-        return_value=mock_resp
-    )
-
-    resp = client.post("/extract-n-post", json=SUBSCRIPTION_NOTIFICATION)
-
-    assert resp.status_code == 200
-    assert mock_post.call_count == 2

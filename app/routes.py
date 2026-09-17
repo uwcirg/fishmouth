@@ -58,10 +58,7 @@ def extract_n_post():
 
         result = process_questionnaire_response(entry["resource"])
         status = int(result["response"]["status"].split()[0])
-        if "bundle" in result["response"]:
-            entry_results.append({"response": result["response"]["bundle"]})
-        else:
-            entry_results.append(result)
+        entry_results.append(result)
 
     results_bundle.update(entry=entry_results)
     return jsonify(results_bundle), status
