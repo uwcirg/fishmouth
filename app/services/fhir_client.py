@@ -43,13 +43,15 @@ def request_resource_upstream(http_verb: str, resource: dict) -> dict:
 
     :return: server response.json
     """
-    if http_verb.lower() == "get" or current_app.config["UPSTREAM_SEARCH_URL"] is None:
+    # NB - using the http_verb to route requests to UPSTREAM_SEARCH vs UPSTREAM_FHIR
+    # this may not cover all cases but for now, `get` is always a search and only a search
+    if http_verb.lower() == "get" and current_app.config["UPSTREAM_SEARCH_URL"] is not None:
+        base_url = current_app.config["UPSTREAM_SEARCH_URL"]
+        user, password = None, None
+    else:
         base_url = current_app.config["UPSTREAM_FHIR_URL"]
         user = current_app.config["UPSTREAM_FHIR_USER"]
         password = current_app.config["UPSTREAM_FHIR_PASSWORD"]
-    else:
-        base_url = current_app.config["UPSTREAM_SEARCH_URL"]
-        user, password = None, None
     timeout = current_app.config["UPSTREAM_FHIR_TIMEOUT"]
     headers = {}
     # Use definition of EPIC_CLIENT_ID as switch for adding additional
