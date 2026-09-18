@@ -67,8 +67,10 @@ def extract_n_post():
 @bp.route("/settings")
 def settings():
     config_settings = {}
+    blacklist = ("SECRET", "KEY", "PASS", "TOKEN", "CREDENTIAL", "AUTH")
     for key in current_app.config:
-        if "password" in key.lower():
+        matches = any(pattern for pattern in blacklist if pattern in key.upper())
+        if matches:
             continue
         config_settings[key] = str(current_app.config[key])
     return jsonify(config_settings)
