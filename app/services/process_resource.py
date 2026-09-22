@@ -73,6 +73,7 @@ def process_questionnaire_response(resource):
         return unprocessable_entity(msg)
 
     # single QuestionnaireResponse will likely generate many Observations
+    app_post_success, upstream_post_success = False, False
     try:
         for resource in extracted.get("entry", []):
             resource = resource.get("resource")  # remove nested bundle format
@@ -80,7 +81,6 @@ def process_questionnaire_response(resource):
             # Map any contained Patient references to UPSTREAM ids.
             mapped_resource = map_patient_references(resource)
 
-            app_post_success, upstream_post_success = False, False
             try:
                 results = request_resource_upstream("post", mapped_resource)
                 remote_id = results["id"]
