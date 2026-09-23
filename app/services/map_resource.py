@@ -82,7 +82,7 @@ def lookup_identified_patient(patient_id):
             request_resource_app_fhir(http_verb="put", resource=app_patient)
 
         PATIENT_MAP[app_patient['id']] = (upstream_patient_id, epic_wpr)
-        flask_g()["patient_wpr"] = epic_wpr
+        setattr(flask_g(), "patient_wpr", epic_wpr)
         return PATIENT_MAP[patient_id]
 
     patient_query = {"resourceType": "Patient", "id": patient_id}
