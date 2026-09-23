@@ -38,6 +38,11 @@ subscription event trigger), a FHIR `Bundle` resource of type
         ]
       }
 
+HTTP status codes may be used to interpret success or failure.
+An error in one entry trumps the success of another's success.
+
+NB it is expected that every QuestionnaireResponse will generate one or more Observations during the $extract process.
+If no Observations can be extracted, a `417 Expectation Failed` will be returned.
 
 ## Tests
 This project uses `py.test` to manage testing. To trigger a test run, invoke `py.test` without arguments:

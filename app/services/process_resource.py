@@ -104,6 +104,18 @@ def process_questionnaire_response(resource):
         current_app.logger.exception(e)
         return unprocessable_entity(str(e))
 
+    # If no observations were extracted, treat as an error as clients
+    # act on status to determine if the extraction was "successful"
+    # NB 417 is intended to communicate the `Expect` request header
+    # can't be fulfilled - using here to communicate the "Expectation
+    # Failed" - namely that we expected to extract observations, but
+    # none were found.
+    if not len(extracted.get("entry", [])):
+        current_app.logger.warning(
+            f"nothing extracted from {resource}"
+        )
+        return dict(response={"status": "417 Expecation Failed"})
+
     # without hitting a short-circuit exit above, the extraction was
     # a success.  return details from extraction to reflect upstream
     current_app.logger.info(
