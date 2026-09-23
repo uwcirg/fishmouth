@@ -109,7 +109,7 @@ def lookup_identified_patient(patient_id):
     }
 
     # search on identifier returns a bundle
-    current_app.logger.debug(f"Lookup patient({upstream_mrn_system()|app_mrn}) on UPSTREAM FHIR")
+    current_app.logger.debug(f"Lookup patient({upstream_mrn_system()}|{app_mrn}) on UPSTREAM FHIR")
     bundle = request_resource_upstream("get", upstream_patient_query)
     assert bundle["resourceType"] == "Bundle"
     total = bundle.get("total") or len(bundle["entry"])

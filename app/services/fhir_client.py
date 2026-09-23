@@ -135,8 +135,8 @@ def request_resource(
     try:
         resp.raise_for_status()
     except requests.HTTPError:
-        current_app.logger.error(f"FHIR POST to {url} failed: {resp.text}")
+        current_app.logger.error(f"FHIR {http_verb.upper()} to {url} failed: {resp.text}")
         raise
 
-    current_app.logger.info(f"FHIR POST to {url} succeeded: {resp.json()}")
+    current_app.logger.info(f"FHIR {http_verb.upper()} to {url} succeeded: {resp.json()}")
     return resp.json()
