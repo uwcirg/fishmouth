@@ -121,6 +121,7 @@ def request_resource(
     basic_auth = None
     if user and password:
         basic_auth = HTTPBasicAuth(user, password)
+    current_app.logger.debug(f"{http_verb.upper()} {url} params:{params} json:{resource}")
     request_func = getattr(requests, http_verb.lower())
     resp = request_func(
         url,
