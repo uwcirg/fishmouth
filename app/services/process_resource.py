@@ -73,7 +73,7 @@ def process_questionnaire_response(resource):
         return unprocessable_entity(msg)
 
     # single QuestionnaireResponse will likely generate many Observations
-    app_post_success, upstream_post_success = False, False
+    app_post_success, upstream_post_success = "n/a", "n/a"
     try:
         for resource in extracted.get("entry", []):
             resource = resource.get("resource")  # remove nested bundle format
@@ -84,7 +84,7 @@ def process_questionnaire_response(resource):
             try:
                 results = request_resource_upstream("post", mapped_resource)
                 remote_id = results["id"]
-                upstream_post_success = True
+                upstream_post_success = "success"
             except Exception as e:
                 msg = f"FHIR UPSTREAM POST failed {e}"
                 current_app.logger.exception(msg)
@@ -99,7 +99,7 @@ def process_questionnaire_response(resource):
                     value=remote_id)
 
                 request_resource_app_fhir("post", resource)
-                app_post_success = True
+                app_post_success = "success"
     except Exception as e:
         return unprocessable_entity(str(e))
 
@@ -107,6 +107,6 @@ def process_questionnaire_response(resource):
     # a success.  return details from extraction to reflect upstream
     current_app.logger.info(
         f"$extract produced {len(extracted.get('entry', []))} entries; "
-        f"upstream POST success: {upstream_post_success} "
-        f"app_FHIR POST success: {app_post_success} ")
+        f"upstream POST {upstream_post_success} "
+        f"app_FHIR POST {app_post_success} ")
     return dict(response={"status": "200 OK", "bundle": extracted})
