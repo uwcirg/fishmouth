@@ -101,6 +101,7 @@ def process_questionnaire_response(resource):
                 request_resource_app_fhir("post", resource)
                 app_post_success = "success"
     except Exception as e:
+        current_app.logger.exception(e)
         return unprocessable_entity(str(e))
 
     # without hitting a short-circuit exit above, the extraction was
