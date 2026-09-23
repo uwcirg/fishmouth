@@ -114,7 +114,7 @@ def process_questionnaire_response(resource):
         current_app.logger.warning(
             f"nothing extracted from {resource}"
         )
-        return dict(response={"status": "417 Expecation Failed"})
+        return dict(response={"status": "417 Expectation Failed"})
 
     # without hitting a short-circuit exit above, the extraction was
     # a success.  return details from extraction to reflect upstream
