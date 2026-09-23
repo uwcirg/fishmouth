@@ -47,7 +47,7 @@ def lookup_identified_patient(patient_id):
     """
     global PATIENT_MAP
     if patient_id in PATIENT_MAP:
-        flask_g()["patient_wpr"] = PATIENT_MAP[patient_id][1]
+        setattr(flask_g(), "patient_wpr", PATIENT_MAP[patient_id][1])
         return PATIENT_MAP[patient_id]
 
     def cache_upstream_result(source_patient, upstream_patient_id):
