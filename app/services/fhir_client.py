@@ -29,7 +29,7 @@ def extract_resource(resource: dict) -> dict:
     try:
         resp.raise_for_status()
     except requests.HTTPError as e:
-        current_app.logger.error("FHIR extract failed: %s", resp.text)
+        current_app.logger.exception("FHIR extract failed: %s", resp.text)
         raise ValueError(resp.text)
 
     return resp.json()
@@ -136,7 +136,7 @@ def request_resource(
     try:
         resp.raise_for_status()
     except requests.HTTPError:
-        current_app.logger.error(f"FHIR {http_verb.upper()} to {url} failed: {resp.text}")
+        current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} failed: {resp.text}")
         raise
 
     current_app.logger.info(f"FHIR {http_verb.upper()} to {url} succeeded: {resp.json()}")
