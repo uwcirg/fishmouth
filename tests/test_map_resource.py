@@ -49,13 +49,17 @@ UPSTREAM_PATIENT = {
 }
 
 
+class shell_class(object):
+    pass
+
+
 def test_lookup_patient(mocker):
     mocker.patch("app.services.map_resource.app_fhir_url", return_value="http://example.org")
     mocker.patch("app.services.map_resource.app_mrn_system", return_value="http://hospital.org/mrn")
     mocker.patch("app.services.map_resource.upstream_fhir_url", return_value="http://other.example.org")
     mocker.patch("app.services.map_resource.upstream_mrn_system", return_value="http://other.hospital.org/mrn")
     mocker.patch("app.services.map_resource.epic_wpr_system", return_value="0.1.1.0")
-    mocker.patch("app.services.map_resource.flask_g", return_value=dict())
+    mocker.patch("app.services.map_resource.flask_g", return_value=shell_class)
 
     # return APP_PATIENT from app_fhir resource lookup
     mocker.patch("app.services.map_resource.request_resource_app_fhir", return_value=APP_PATIENT)

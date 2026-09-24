@@ -86,7 +86,6 @@ def lookup_identified_patient(patient_id):
         return PATIENT_MAP[patient_id]
 
     patient_query = {"resourceType": "Patient", "id": patient_id}
-    current_app.logger.debug(f"Lookup patient({patient_id}) on APP FHIR")
     app_patient = request_resource_app_fhir("get", patient_query)
     assert app_patient["resourceType"] == "Patient"
     app_mrn = extract_identifier_value(app_patient["identifier"], app_mrn_system())
@@ -109,7 +108,6 @@ def lookup_identified_patient(patient_id):
     }
 
     # search on identifier returns a bundle
-    current_app.logger.debug(f"Lookup patient({upstream_mrn_system()}|{app_mrn}) on UPSTREAM FHIR")
     bundle = request_resource_upstream("get", upstream_patient_query)
     assert bundle["resourceType"] == "Bundle"
     total = bundle.get("total") or len(bundle["entry"])
