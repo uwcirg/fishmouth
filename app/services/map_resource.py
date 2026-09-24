@@ -110,7 +110,9 @@ def lookup_identified_patient(patient_id):
     # search on identifier returns a bundle
     bundle = request_resource_upstream("get", upstream_patient_query)
     assert bundle["resourceType"] == "Bundle"
-    total = bundle.get("total") or len(bundle["entry"])
+    total = bundle.get("total")
+    if total is None:
+        total = len(bundle.get("entry", []))
     if total == 0:
         current_app.logger.warning(f"No match for Patient identifier {app_mrn} found on UPSTREAM_FHIR server")
         raise ValueError("Can't find matching Patient on UPSTREAM_FHIR server")
