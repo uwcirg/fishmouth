@@ -77,6 +77,9 @@ def process_questionnaire_response(resource):
     try:
         for resource in extracted.get("entry", []):
             resource = resource.get("resource")  # remove nested bundle format
+            # $extract includes an ephemeral id that can't be included
+            # when POSTing to either server - remove
+            resource.pop("id")
 
             # Map any contained Patient references to UPSTREAM ids.
             mapped_resource = map_patient_references(resource)

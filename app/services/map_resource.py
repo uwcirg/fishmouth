@@ -149,7 +149,4 @@ def map_patient_references(resource):
     mapped_id, _ = lookup_identified_patient(patient_id=subject_id)
     mapped_resource = resource.copy()
     mapped_resource.update({"subject": f"Patient/{mapped_id}"})
-
-    # remove the APP FHIR resource.id - doesn't apply to UPSTREAM
-    mapped_resource.pop("id")
     return mapped_resource
