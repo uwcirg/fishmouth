@@ -47,7 +47,7 @@ def lookup_identified_patient(patient_id):
     """
     global PATIENT_MAP
     if patient_id in PATIENT_MAP:
-        flask_g()["patient_wpr"] = PATIENT_MAP[patient_id][1]
+        setattr(flask_g(), "patient_wpr", PATIENT_MAP[patient_id][1])
         return PATIENT_MAP[patient_id]
 
     def cache_upstream_result(source_patient, upstream_patient_id):
@@ -82,7 +82,7 @@ def lookup_identified_patient(patient_id):
             request_resource_app_fhir(http_verb="put", resource=app_patient)
 
         PATIENT_MAP[app_patient['id']] = (upstream_patient_id, epic_wpr)
-        flask_g()["patient_wpr"] = epic_wpr
+        setattr(flask_g(), "patient_wpr", epic_wpr)
         return PATIENT_MAP[patient_id]
 
     patient_query = {"resourceType": "Patient", "id": patient_id}
@@ -110,7 +110,9 @@ def lookup_identified_patient(patient_id):
     # search on identifier returns a bundle
     bundle = request_resource_upstream("get", upstream_patient_query)
     assert bundle["resourceType"] == "Bundle"
-    total = bundle.get("total") or len(bundle["entry"])
+    total = bundle.get("total")
+    if total is None:
+        total = len(bundle.get("entry", []))
     if total == 0:
         current_app.logger.warning(f"No match for Patient identifier {app_mrn} found on UPSTREAM_FHIR server")
         raise ValueError("Can't find matching Patient on UPSTREAM_FHIR server")
