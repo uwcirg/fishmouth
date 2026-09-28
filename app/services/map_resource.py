@@ -148,5 +148,5 @@ def map_patient_references(resource):
 
     mapped_id, _ = lookup_identified_patient(patient_id=subject_id)
     mapped_resource = resource.copy()
-    mapped_resource.update({"subject": f"Patient/{mapped_id}"})
+    mapped_resource.update({"subject": {"reference": f"Patient/{mapped_id}"}})
     return mapped_resource
