@@ -45,7 +45,7 @@ def request_resource_upstream(http_verb: str, resource: dict) -> dict:
     """
     # NB - using the http_verb to route requests to UPSTREAM_SEARCH vs UPSTREAM_FHIR
     # this may not cover all cases but for now, `get` is always a search and only a search
-    if http_verb.lower() == "get" and current_app.config["UPSTREAM_SEARCH_URL"] is not None:
+    if http_verb.lower() == "get" and current_app.config["UPSTREAM_SEARCH_URL"]:
         base_url = current_app.config["UPSTREAM_SEARCH_URL"]
         user, password = None, None
     else:
