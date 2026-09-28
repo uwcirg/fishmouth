@@ -84,6 +84,9 @@ def process_questionnaire_response(resource):
             # Map any contained Patient references to UPSTREAM ids.
             mapped_resource = map_patient_references(resource)
 
+            # Observation.derivedFrom points to a resource not found UPSTREAM, remove.
+            mapped_resource.pop("derivedFrom", None)
+
             try:
                 results = request_resource_upstream("post", mapped_resource)
                 remote_id = results["id"]
