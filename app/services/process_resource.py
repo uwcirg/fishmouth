@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from flask import current_app
 import json
 
@@ -55,6 +57,23 @@ def entry_from_bundle(bundle):
     return bundle["entry"][0]
 
 
+def patch_observation_vital_signs(observation):
+    """Work around missing extension category in QuestionnaireResponse items"""
+    assert(observation["resourceType"] == "Observation")
+    code = "vital-signs"
+    system = "http://hl7.org/fhir/observation-category"
+    coding = {"coding": [{"system": system, "code": code}]}
+    result = deepcopy(observation)
+
+    if "category" not in observation:
+        result["category"] = []
+
+    found = any(each and each.get("coding") == coding for each in result["category"])
+    if not found:
+        result["category"].append(coding)
+    return result
+
+
 def process_questionnaire_response(resource):
     """Given a QuestionnaireResponse, react as requested
 
@@ -86,6 +105,9 @@ def process_questionnaire_response(resource):
 
             # Observation.derivedFrom points to a resource not found UPSTREAM, remove.
             mapped_resource.pop("derivedFrom", None)
+
+            # Patch any observations missing the required vital-signs coding
+            mapped_resource = patch_observation_vital_signs(mapped_resource)
 
             try:
                 results = request_resource_upstream("post", mapped_resource)

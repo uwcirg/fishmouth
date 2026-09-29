@@ -1,4 +1,7 @@
-from app.services.process_resource import update_identifier
+from app.services.process_resource import (
+    patch_observation_vital_signs,
+    update_identifier,
+)
 
 OBSERVATION = {
   "resourceType": "Observation",
@@ -69,3 +72,12 @@ def test_update_identifiers():
     for id in obs["identifier"]:
         if id["system"] == "http://hospital.org":
             assert id["value"] == "new-value"
+
+
+def test_observation_add_vitals():
+    improved = patch_observation_vital_signs(OBSERVATION)
+    assert improved["category"] == [
+        {"coding": [
+            {"system": "http://hl7.org/fhir/observation-category", "code": "vital-signs"}]
+        }
+    ]
