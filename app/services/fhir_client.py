@@ -142,5 +142,11 @@ def request_resource(
         current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} failed payload: {resp.request.body}")
         raise http_err
 
-    current_app.logger.info(f"FHIR {http_verb.upper()} to {url} succeeded: {resp.json()}")
+    results = None
+    try:
+        current_app.logger.info(f"FHIR {http_verb.upper()} to {url} succeeded: {resp.json()}")
+        results = resp.json()
+    except requests.exceptions.JSONDecodeError as json_err:
+        # Epic doesn't always return JSON despite the accept header
+        current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} succeeded (but failed to generate JSON): {resp.text}")
     return resp.json()
