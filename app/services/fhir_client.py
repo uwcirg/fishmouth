@@ -118,6 +118,9 @@ def request_resource(
         headers["Content-Type"] = "application/fhir+json"
     if "Accept" not in headers:
         headers["Accept"] = "application/fhir+json"
+    if "Prefer" not in headers:
+        headers["Prefer"] = "return=representation"
+
     basic_auth = None
     if user and password:
         basic_auth = HTTPBasicAuth(user, password)
@@ -149,4 +152,5 @@ def request_resource(
     except requests.exceptions.JSONDecodeError as json_err:
         # Epic doesn't always return JSON despite the accept header
         current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} succeeded (but failed to generate JSON): {resp.text}")
-    return resp.json()
+        results = {"resourceType": "Observation", "id": "soon..."}
+    return results
