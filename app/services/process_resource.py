@@ -100,14 +100,17 @@ def process_questionnaire_response(resource):
             # when POSTing to either server - remove
             resource.pop("id", None)
 
+            # "performer" has a different meaning on Epic - avoid trouble
+            resource.pop("performer", None)
+
+            # Patch any observations missing the required vital-signs coding
+            resource = patch_observation_vital_signs(resource)
+
             # Map any contained Patient references to UPSTREAM ids.
             mapped_resource = map_patient_references(resource)
 
             # Observation.derivedFrom points to a resource not found UPSTREAM, remove.
             mapped_resource.pop("derivedFrom", None)
-
-            # Patch any observations missing the required vital-signs coding
-            mapped_resource = patch_observation_vital_signs(mapped_resource)
 
             try:
                 results = request_resource_upstream("post", mapped_resource)
