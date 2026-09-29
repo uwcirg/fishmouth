@@ -1,4 +1,6 @@
 """Manage mapping of Patient identifiers between multiple FHIR servers"""
+from copy import deepcopy
+
 from flask import current_app
 
 from .fhir_client import request_resource_app_fhir, request_resource_upstream
@@ -162,7 +164,8 @@ def map_patient_references(resource):
         current_app.logger.warning(f"Patient reference not found in resource {resource}")
         return resource
 
+    mapped_resource = deepcopy(resource)
     mapped_id, _ = lookup_identified_patient(patient_id=subject_id)
 
-    json_search_replace(resource, f"Patient/{subject_id}", f"Patient/{mapped_id}")
-    return resource
+    json_search_replace(mapped_resource, f"Patient/{subject_id}", f"Patient/{mapped_id}")
+    return mapped_resource

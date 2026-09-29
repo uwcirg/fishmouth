@@ -87,8 +87,8 @@ def test_update_references(mocker):
         "app.services.map_resource.lookup_identified_patient",
         return_value=("mapped", None)
     )
-    obs = deepcopy(OBSERVATION)
-    obs = map_patient_references(obs)
+    obs = map_patient_references(OBSERVATION)
+    assert obs != OBSERVATION
     assert obs["subject"] == {"reference": "Patient/mapped"}
     assert obs["performer"] == [{"reference": "Patient/mapped"}]
 
