@@ -68,7 +68,7 @@ def patch_observation_vital_signs(observation):
     if "category" not in observation:
         result["category"] = []
 
-    found = any(each and each.get("coding") == coding for each in result["category"])
+    found = any(each == coding for each in result["category"])
     if not found:
         result["category"].append(coding)
     return result

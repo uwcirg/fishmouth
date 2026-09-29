@@ -81,3 +81,15 @@ def test_observation_add_vitals():
             {"system": "http://hl7.org/fhir/observation-category", "code": "vital-signs"}]
         }
     ]
+
+
+def test_observation_already_present_vitals():
+    with_vitals = patch_observation_vital_signs(OBSERVATION)
+    # second call shouldn't add again..
+    improved = patch_observation_vital_signs(with_vitals)
+    assert improved["category"] == [
+        {"coding": [
+            {"system": "http://hl7.org/fhir/observation-category", "code": "vital-signs"}]
+        }
+    ]
+
