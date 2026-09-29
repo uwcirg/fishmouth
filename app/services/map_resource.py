@@ -128,6 +128,22 @@ def lookup_identified_patient(patient_id):
         upstream_patient_id=match['id'])
 
 
+def json_search_replace(obj, old_value, new_value):
+    """recursively replace all occurrences of old_value with new_value in JSON"""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if v == old_value:
+                obj[k] = new_value
+            else:
+                json_search_replace(v, old_value, new_value)
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            if v == old_value:
+                obj[i] = new_value
+            else:
+                json_search_replace(v, old_value, new_value)
+
+
 def map_patient_references(resource):
     """Map the contained references between FHIR servers
 
@@ -147,6 +163,6 @@ def map_patient_references(resource):
         return resource
 
     mapped_id, _ = lookup_identified_patient(patient_id=subject_id)
-    mapped_resource = resource.copy()
-    mapped_resource.update({"subject": {"reference": f"Patient/{mapped_id}"}})
-    return mapped_resource
+
+    json_search_replace(resource, f"Patient/{subject_id}", f"Patient{mapped_id}")
+    return resource
