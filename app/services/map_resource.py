@@ -164,5 +164,5 @@ def map_patient_references(resource):
 
     mapped_id, _ = lookup_identified_patient(patient_id=subject_id)
 
-    json_search_replace(resource, f"Patient/{subject_id}", f"Patient{mapped_id}")
+    json_search_replace(resource, f"Patient/{subject_id}", f"Patient/{mapped_id}")
     return resource

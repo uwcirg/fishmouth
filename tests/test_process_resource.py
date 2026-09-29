@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+from app.services.map_resource import map_patient_references
 from app.services.process_resource import (
     patch_observation_vital_signs,
     update_identifier,
@@ -54,7 +57,12 @@ OBSERVATION = {
     "unit": "mmol/L",
     "system": "http://unitsofmeasure.org",
     "code": "mmol/L"
-  }
+  },
+  "performer": [
+    {
+      "reference": "Patient/example",
+    }
+  ],
 }
 
 
@@ -73,6 +81,16 @@ def test_update_identifiers():
         if id["system"] == "http://hospital.org":
             assert id["value"] == "new-value"
 
+
+def test_update_references(mocker):
+    mocker.patch(
+        "app.services.map_resource.lookup_identified_patient",
+        return_value=("mapped", None)
+    )
+    obs = deepcopy(OBSERVATION)
+    obs = map_patient_references(obs)
+    assert obs["subject"] == {"reference": "Patient/mapped"}
+    assert obs["performer"] == [{"reference": "Patient/mapped"}]
 
 def test_observation_add_vitals():
     improved = patch_observation_vital_signs(OBSERVATION)
