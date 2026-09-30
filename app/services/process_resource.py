@@ -1,5 +1,4 @@
 from copy import deepcopy
-
 from flask import current_app
 import json
 
@@ -58,7 +57,11 @@ def entry_from_bundle(bundle):
 
 
 def patch_observation_vital_signs(observation):
-    """Work around missing extension category in QuestionnaireResponse items"""
+    """Work around missing extension category in QuestionnaireResponse items
+
+    NB, this blindly adds the vital-signs observation category to all
+    observations, when called (at least those that don't already have it).
+    """
     assert(observation["resourceType"] == "Observation")
     code = "vital-signs"
     system = "http://hl7.org/fhir/observation-category"

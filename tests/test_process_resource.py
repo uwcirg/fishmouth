@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from app.services.map_resource import map_patient_references
 from app.services.process_resource import (
     patch_observation_vital_signs,
