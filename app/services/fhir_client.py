@@ -118,7 +118,7 @@ def request_resource(
         headers["Content-Type"] = "application/fhir+json"
     if "Accept" not in headers:
         headers["Accept"] = "application/fhir+json"
-    if "Prefer" not in headers:
+    if http_verb.lower() in ("post", "put", "patch") and "Prefer" not in headers:
         headers["Prefer"] = "return=representation"
 
     basic_auth = None
@@ -145,7 +145,6 @@ def request_resource(
         current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} failed payload: {resp.request.body}")
         raise http_err
 
-    results = None
     try:
         current_app.logger.info(f"FHIR {http_verb.upper()} to {url} succeeded: {resp.json()}")
         results = resp.json()
