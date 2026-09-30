@@ -149,7 +149,7 @@ def request_resource(
         current_app.logger.info(f"FHIR {http_verb.upper()} to {url} succeeded: {resp.json()}")
         results = resp.json()
     except requests.exceptions.JSONDecodeError:
-        # Epic doesn't always return JSON despite the accept header
+        # Epic doesn't always return JSON without the `Prefer` header.
         current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} succeeded (but failed to generate JSON): {resp.text}")
         location = resp.headers.get("Location")
         type, id = location.split("/")
