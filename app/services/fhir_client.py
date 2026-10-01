@@ -45,7 +45,7 @@ def request_resource_upstream(http_verb: str, resource: dict) -> dict:
     """
     # NB - using the http_verb to route requests to UPSTREAM_SEARCH vs UPSTREAM_FHIR
     # this may not cover all cases but for now, `get` is always a search and only a search
-    if http_verb.lower() == "get" and current_app.config["UPSTREAM_SEARCH_URL"] is not None:
+    if http_verb.lower() == "get" and current_app.config["UPSTREAM_SEARCH_URL"]:
         base_url = current_app.config["UPSTREAM_SEARCH_URL"]
         user, password = None, None
     else:
@@ -118,6 +118,9 @@ def request_resource(
         headers["Content-Type"] = "application/fhir+json"
     if "Accept" not in headers:
         headers["Accept"] = "application/fhir+json"
+    if http_verb.lower() in ("post", "put", "patch") and "Prefer" not in headers:
+        headers["Prefer"] = "return=representation"
+
     basic_auth = None
     if user and password:
         basic_auth = HTTPBasicAuth(user, password)
@@ -135,11 +138,20 @@ def request_resource(
 
     try:
         resp.raise_for_status()
-    except requests.HTTPError:
+    except requests.HTTPError as http_err:
+        current_app.logger.exception(f"HTTP error occurred: {http_err}")
         current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} failed: {resp.text}")
         current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} failed headers: {resp.request.headers}")
         current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} failed payload: {resp.request.body}")
-        raise
+        raise http_err
 
-    current_app.logger.info(f"FHIR {http_verb.upper()} to {url} succeeded: {resp.json()}")
-    return resp.json()
+    try:
+        current_app.logger.info(f"FHIR {http_verb.upper()} to {url} succeeded: {resp.json()}")
+        results = resp.json()
+    except requests.exceptions.JSONDecodeError:
+        # Epic doesn't always return JSON without the `Prefer` header.
+        current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} succeeded (but failed to generate JSON): {resp.text}")
+        location = resp.headers.get("Location")
+        type, id = location.split("/")
+        results = {"resourceType": type, "id": id}
+    return results

@@ -1,4 +1,5 @@
 """Manage mapping of Patient identifiers between multiple FHIR servers"""
+from copy import deepcopy
 from flask import current_app
 
 from .fhir_client import request_resource_app_fhir, request_resource_upstream
@@ -128,6 +129,22 @@ def lookup_identified_patient(patient_id):
         upstream_patient_id=match['id'])
 
 
+def json_search_replace(obj, old_value, new_value):
+    """recursively replace all occurrences of old_value with new_value in JSON"""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if v == old_value:
+                obj[k] = new_value
+            else:
+                json_search_replace(v, old_value, new_value)
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            if v == old_value:
+                obj[i] = new_value
+            else:
+                json_search_replace(v, old_value, new_value)
+
+
 def map_patient_references(resource):
     """Map the contained references between FHIR servers
 
@@ -146,7 +163,8 @@ def map_patient_references(resource):
         current_app.logger.warning(f"Patient reference not found in resource {resource}")
         return resource
 
+    mapped_resource = deepcopy(resource)
     mapped_id, _ = lookup_identified_patient(patient_id=subject_id)
-    mapped_resource = resource.copy()
-    mapped_resource.update({"subject": f"Patient/{mapped_id}"})
+
+    json_search_replace(mapped_resource, f"Patient/{subject_id}", f"Patient/{mapped_id}")
     return mapped_resource

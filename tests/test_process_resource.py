@@ -1,4 +1,8 @@
-from app.services.process_resource import update_identifier
+from app.services.map_resource import map_patient_references
+from app.services.process_resource import (
+    patch_observation_vital_signs,
+    update_identifier,
+)
 
 OBSERVATION = {
   "resourceType": "Observation",
@@ -51,7 +55,12 @@ OBSERVATION = {
     "unit": "mmol/L",
     "system": "http://unitsofmeasure.org",
     "code": "mmol/L"
-  }
+  },
+  "performer": [
+    {
+      "reference": "Patient/example",
+    }
+  ],
 }
 
 
@@ -69,3 +78,47 @@ def test_update_identifiers():
     for id in obs["identifier"]:
         if id["system"] == "http://hospital.org":
             assert id["value"] == "new-value"
+
+
+def test_update_references(mocker):
+    mocker.patch(
+        "app.services.map_resource.lookup_identified_patient",
+        return_value=("mapped", None)
+    )
+    obs = map_patient_references(OBSERVATION)
+    assert obs != OBSERVATION
+    assert obs["subject"] == {"reference": "Patient/mapped"}
+    assert obs["performer"] == [{"reference": "Patient/mapped"}]
+
+def test_observation_add_vitals():
+    improved = patch_observation_vital_signs(OBSERVATION)
+    assert improved["category"] == [
+        {"coding": [
+            {"system": "http://hl7.org/fhir/observation-category", "code": "vital-signs"}]
+        }
+    ]
+
+
+def test_observation_already_present_vitals():
+    with_vitals = patch_observation_vital_signs(OBSERVATION)
+    # second call shouldn't add again.
+    improved = patch_observation_vital_signs(with_vitals)
+    assert improved["category"] == [
+        {"coding": [
+            {"system": "http://hl7.org/fhir/observation-category", "code": "vital-signs"}]
+        }
+    ]
+
+def test_observation_incorrect_category_present():
+    with_survey = patch_observation_vital_signs(OBSERVATION)
+    with_survey["category"][0]["coding"][0]["code"] = "survey"
+
+    # second call shouldn't add again.
+    improved = patch_observation_vital_signs(with_survey)
+    assert improved["category"] == [
+        {"coding": [
+            {"system": "http://hl7.org/fhir/observation-category", "code": "vital-signs"}]
+        }
+    ]
+    assert len(improved["category"]) == 1
+
