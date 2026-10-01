@@ -101,11 +101,24 @@ def test_observation_add_vitals():
 
 def test_observation_already_present_vitals():
     with_vitals = patch_observation_vital_signs(OBSERVATION)
-    # second call shouldn't add again..
+    # second call shouldn't add again.
     improved = patch_observation_vital_signs(with_vitals)
     assert improved["category"] == [
         {"coding": [
             {"system": "http://hl7.org/fhir/observation-category", "code": "vital-signs"}]
         }
     ]
+
+def test_observation_incorrect_category_present():
+    with_survey = patch_observation_vital_signs(OBSERVATION)
+    with_survey["category"][0]["coding"][0]["code"] = "survey"
+
+    # second call shouldn't add again.
+    improved = patch_observation_vital_signs(with_survey)
+    assert improved["category"] == [
+        {"coding": [
+            {"system": "http://hl7.org/fhir/observation-category", "code": "vital-signs"}]
+        }
+    ]
+    assert len(improved["category"]) == 1
 

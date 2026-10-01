@@ -59,8 +59,11 @@ def entry_from_bundle(bundle):
 def patch_observation_vital_signs(observation):
     """Work around missing extension category in QuestionnaireResponse items
 
-    NB, this blindly adds the vital-signs observation category to all
-    observations, when called (at least those that don't already have it).
+    NB, this is effectively working around a situation where $extract is
+    populating the wrong `category` - namely `vital-signs` is required,
+    but `survey` is what is currently being generated.  Following a call
+    to this function, the observation will have (and only have) the `vital-signs`
+    observation-category.
     """
     assert(observation["resourceType"] == "Observation")
     code = "vital-signs"
@@ -72,8 +75,10 @@ def patch_observation_vital_signs(observation):
         result["category"] = []
 
     found = any(each == coding for each in result["category"])
-    if not found:
-        result["category"].append(coding)
+    if found and len(result["category"]) == 1:
+        return result
+
+    result["category"] = [coding,]
     return result
 
 
