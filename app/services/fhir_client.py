@@ -29,7 +29,7 @@ def extract_resource(resource: dict) -> dict:
     try:
         resp.raise_for_status()
     except requests.HTTPError as e:
-        current_app.logger.error("FHIR extract failed: %s", resp.text)
+        current_app.logger.exception("FHIR extract failed: %s", resp.text)
         raise ValueError(resp.text)
 
     return resp.json()
@@ -121,12 +121,14 @@ def request_resource(
     basic_auth = None
     if user and password:
         basic_auth = HTTPBasicAuth(user, password)
+    json = resource if http_verb.lower() in ("put", "post", "patch") else None
+    current_app.logger.debug(f"{http_verb.upper()} {url} params:{params} json:{json}")
     request_func = getattr(requests, http_verb.lower())
     resp = request_func(
         url,
         auth=basic_auth,
         params=params,
-        json=resource,
+        json=json,
         headers=headers,
         timeout=timeout,
     )
@@ -134,8 +136,8 @@ def request_resource(
     try:
         resp.raise_for_status()
     except requests.HTTPError:
-        current_app.logger.error(f"FHIR POST to {url} failed: {resp.text}")
+        current_app.logger.exception(f"FHIR {http_verb.upper()} to {url} failed: {resp.text}")
         raise
 
-    current_app.logger.info(f"FHIR POST to {url} succeeded: {resp.json()}")
+    current_app.logger.info(f"FHIR {http_verb.upper()} to {url} succeeded: {resp.json()}")
     return resp.json()
