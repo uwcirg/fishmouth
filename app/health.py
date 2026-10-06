@@ -6,7 +6,7 @@ bp = Blueprint("health", __name__)
 
 @bp.route("/health/live")
 def live():
-    return jsonify({"status", "ok"}), 200
+    return jsonify({"status": "ok"}), 200
 
 
 @bp.route("/health/ready")
@@ -25,4 +25,4 @@ def ready():
         response = requests.get(f"{base}/metadata")
         response.raise_for_status()
 
-    return jsonify({"status", "ready"}), 200
+    return jsonify({"status": "ready"}), 200
