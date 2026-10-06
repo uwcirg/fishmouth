@@ -16,6 +16,10 @@ def create_app():
     app.register_blueprint(bp)
 
     configure_proxy(app)
+
+    from .health import bp as health_bp
+    app.register_blueprint(health_bp)
+
     return app
 
 
