@@ -122,3 +122,19 @@ def test_observation_incorrect_category_present():
     ]
     assert len(improved["category"]) == 1
 
+
+def test_observation_qr_identifier_added(mocker):
+    mocker.patch(
+        "app.services.map_resource.lookup_identified_patient",
+        return_value=("mapped", None)
+    )
+    obs = map_patient_references(OBSERVATION)
+    qr_id = "42"
+    obs = update_identifier(
+        resource=obs,
+        system="http://cnics/QuestionnaireResponse",
+        value=qr_id,
+    )
+    matching = [i for i in obs["identifier"] if i["system"] == "http://cnics/QuestionnaireResponse"]
+    assert len(matching) == 1
+    assert matching[0]["value"] == qr_id
