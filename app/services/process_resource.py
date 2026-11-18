@@ -88,6 +88,7 @@ def process_questionnaire_response(resource):
     :return: response dict conformant to transaction-response bundle
     """
     assert(resource["resourceType"] == "QuestionnaireResponse")
+    qr_id = resource.get("id")
     try:
         extracted = extract_resource(resource)
     except Exception as e:
@@ -119,6 +120,14 @@ def process_questionnaire_response(resource):
 
             # Observation.derivedFrom points to a resource not found UPSTREAM, remove.
             mapped_resource.pop("derivedFrom", None)
+
+            # Add an identifer in place of "derivedFrom" for the source questionnaire response.
+            # Useful shortcut for maintaining provenance without the foreign key constraint.
+            # for where such extracted Observations originated.
+            mapped_resource = update_identifier(
+                resource=mapped_resource,
+                system="http://cnics.cirg.washington.edu/QuestionnaireResponse",
+                value=qr_id)
 
             try:
                 results = request_resource_upstream("post", mapped_resource)
