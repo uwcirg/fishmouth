@@ -121,13 +121,11 @@ def process_questionnaire_response(resource):
             # Observation.derivedFrom points to a resource not found UPSTREAM, remove.
             mapped_resource.pop("derivedFrom", None)
 
-            # Add an identifer in place of "derivedFrom" for the source questionnaire response.
+            # Add an identifier in place of "derivedFrom" for the source questionnaire response.
             # Useful shortcut for maintaining provenance without the foreign key constraint.
             # for where such extracted Observations originated.
-            mapped_resource = update_identifier(
-                resource=mapped_resource,
-                system="http://cnics.cirg.washington.edu/QuestionnaireResponse",
-                value=qr_id)
+            system = current_app.config["CNICS_SYSTEM_IDENTIFIER"] + "/QuestionnaireResponse.id"
+            mapped_resource = update_identifier(resource=mapped_resource, system=system, value=qr_id)
 
             try:
                 results = request_resource_upstream("post", mapped_resource)
